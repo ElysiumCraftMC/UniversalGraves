@@ -21,6 +21,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.ExperienceOrbEntity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
@@ -362,7 +363,8 @@ public class GraveUtils {
                             for (var item : items) {
                                 //0 to 100 value
                                 if (GraveGameRules.getDropItemStackChance(world) > world.random.nextInt(100)) {
-                                    droppedItems.add(item.stack());
+                                    world.spawnEntity(new ItemEntity(world, gravePos.getX(), gravePos.getY(), gravePos.getZ(), item.stack()));
+                                    continue;
                                 }
                                 droppedItems.add(item.stack());
                             }

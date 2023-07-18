@@ -13,7 +13,7 @@ public class GraveGameRules {
     public static final GameRules.Key<GameRules.IntRule> BREAKING_TIME =
             GameRuleRegistry.register("universal_graves:breaking_time", GameRules.Category.PLAYER, GameRuleFactory.createIntRule(-2, -2));
     public static final GameRules.Key<GameRules.IntRule> DROP_ITEM_STACK_CHANCE =
-            GameRuleRegistry.register("universal_graves:drop_item_stack_chance", GameRules.Category.PLAYER, GameRuleFactory.createIntRule(0, 0, 100));
+            GameRuleRegistry.register("universal_graves:drop_item_stack_chance", GameRules.Category.PLAYER, GameRuleFactory.createIntRule(-1, -1, 100));
 
 
     public static final int getProtectionTime(MinecraftServer server) {
@@ -39,7 +39,7 @@ public class GraveGameRules {
     public static final int getDropItemStackChance(World world) {
         var rule = world.getGameRules().get(DROP_ITEM_STACK_CHANCE).get();
 
-        if (rule == -2) {
+        if (rule == -1) {
             return ConfigManager.getConfig().configData.dropItemStackChance;
         } else {
             return rule;

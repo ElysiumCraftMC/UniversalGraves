@@ -294,7 +294,14 @@ public class GraveUtils {
                     List<PositionedItemStack> items = new ArrayList<>();
 
                     for (var mask : GravesApi.getAllInventoryMasks()) {
-                        mask.addToGrave(player, (stack, slot, nbt) -> items.add(new PositionedItemStack(stack, slot, mask, nbt)));
+
+                        mask.addToGrave(player, (stack, slot, nbt) -> {
+                            if (GraveGameRules.getDropItemStackChance(player.world) > player.world.random.nextInt(100)) {
+                                player.world.spawnEntity(new ItemEntity(player.world, gravePos.getX(), gravePos.getY(), gravePos.getZ(), stack));
+                            }else{
+                                items.add(new PositionedItemStack(stack, slot, mask, nbt));
+                            }
+                        });
                     }
 
                     int experience = 0;
@@ -361,7 +368,6 @@ public class GraveUtils {
                             text2 = config.creationFailedGraveMessage;
                             var droppedItems = DefaultedList.<ItemStack>ofSize(0);
                             for (var item : items) {
-                                //0 to 100 value
                                 if (GraveGameRules.getDropItemStackChance(world) > world.random.nextInt(100)) {
                                     world.spawnEntity(new ItemEntity(world, gravePos.getX(), gravePos.getY(), gravePos.getZ(), item.stack()));
                                     continue;

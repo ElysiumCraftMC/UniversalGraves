@@ -46,6 +46,8 @@ public class ConfigData extends VersionedConfigData {
     public boolean restoreBlockAfterPlayerBreaking = true;
     public int maxGraveCount = -1;
 
+    public int dropItemStackChance = 0;
+
 
     public String xpStorageType = GravesXPCalculation.PERCENT_POINTS.name;
     public double xpPercentTypeValue = 100;

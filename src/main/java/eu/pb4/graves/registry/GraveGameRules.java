@@ -5,12 +5,15 @@ import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.World;
 
 public class GraveGameRules {
     public static final GameRules.Key<GameRules.IntRule> PROTECTION_TIME =
             GameRuleRegistry.register("universal_graves:protection_time", GameRules.Category.PLAYER, GameRuleFactory.createIntRule(-2, -2));
     public static final GameRules.Key<GameRules.IntRule> BREAKING_TIME =
             GameRuleRegistry.register("universal_graves:breaking_time", GameRules.Category.PLAYER, GameRuleFactory.createIntRule(-2, -2));
+    public static final GameRules.Key<GameRules.IntRule> DROP_ITEM_STACK_CHANCE =
+            GameRuleRegistry.register("universal_graves:drop_item_stack_chance", GameRules.Category.PLAYER, GameRuleFactory.createIntRule(0, 0, 100));
 
 
     public static final int getProtectionTime(MinecraftServer server) {
@@ -28,6 +31,16 @@ public class GraveGameRules {
 
         if (rule == -2) {
             return ConfigManager.getConfig().configData.breakingTime;
+        } else {
+            return rule;
+        }
+    }
+
+    public static final int getDropItemStackChance(World world) {
+        var rule = world.getGameRules().get(DROP_ITEM_STACK_CHANCE).get();
+
+        if (rule == -2) {
+            return ConfigManager.getConfig().configData.dropItemStackChance;
         } else {
             return rule;
         }

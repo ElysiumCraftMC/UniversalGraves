@@ -11,10 +11,7 @@ import eu.pb4.graves.event.PlayerGraveCreationEvent;
 import eu.pb4.graves.grave.Grave;
 import eu.pb4.graves.grave.GraveManager;
 import eu.pb4.graves.grave.PositionedItemStack;
-import eu.pb4.graves.registry.GraveBlock;
-import eu.pb4.graves.registry.GraveBlockEntity;
-import eu.pb4.graves.registry.SafeXPEntity;
-import eu.pb4.graves.registry.TempBlock;
+import eu.pb4.graves.registry.*;
 import eu.pb4.placeholders.api.Placeholders;
 import eu.pb4.placeholders.api.node.TextNode;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
@@ -169,7 +166,6 @@ public class GraveUtils {
             }
 
 
-
             return GraveValidPosCheckEvent.EVENT.invoker().isValid(player, world, pos);
         } else {
             return BlockResult.BLOCK;
@@ -227,13 +223,12 @@ public class GraveUtils {
         MinecraftServer server = Objects.requireNonNull(player.getServer(), "server; running on client?");
         ServerWorld world = server.getWorld(RegistryKey.of(Registry.WORLD_KEY, pos.world()));
         if (world != null) {
-            player.sendMessage(Placeholders.parseText(movingText, Placeholders.PREDEFINED_PLACEHOLDER_PATTERN, Map.of("time",
-                    Text.of(player.isCreative() ? "0" : Integer.toString(config.configData.teleportTime)))));
+            player.sendMessage(Placeholders.parseText(movingText, Placeholders.PREDEFINED_PLACEHOLDER_PATTERN, Map.of("time", Text.of(player.isCreative() ? "0" : Integer.toString(config.configData.teleportTime)))));
 
             GravesMod.DO_ON_NEXT_TICK.add(new Runnable() {
-                double x = pos.x();
-                double y = pos.y() + config.configData.teleportHeight;
-                double z = pos.z();
+                final double x = pos.x();
+                final double y = pos.y() + config.configData.teleportHeight;
+                final double z = pos.z();
 
                 // If any movement occurs, the teleport request will be cancelled.
                 final Vec3d currentPosition = player.getPos();
@@ -247,18 +242,15 @@ public class GraveUtils {
                     if (--teleportTicks >= 0) {
                         if (!config.configData.allowMovingDuringTeleportation && !player.getPos().equals(currentPosition)) {
                             player.sendMessage(config.teleportCancelledText);
-                            player.playSound(SoundEvents.ENTITY_SHULKER_HURT_CLOSED,
-                                    SoundCategory.MASTER, 1f, 0.5f);
+                            player.playSound(SoundEvents.ENTITY_SHULKER_HURT_CLOSED, SoundCategory.MASTER, 1f, 0.5f);
                             finishedCallback.accept(false);
                             return;
                         }
                         if (teleportTicks == 0) {
                             player.sendMessage(Placeholders.parseText(config.teleportLocationText, PREDEFINED_PLACEHOLDER_PATTERN, Map.of("position", Text.translatable("chat.coordinates", x, y, z))));
 
-                            player.teleport(world, x + 0.5D, y + 1.0D, z + 0.5D,
-                                    player.getYaw(), player.getPitch());
-                            player.playSound(SoundEvents.ENTITY_ENDERMAN_TELEPORT,
-                                    SoundCategory.MASTER, 1f, 1f);
+                            player.teleport(world, x + 0.5D, y + 1.0D, z + 0.5D, player.getYaw(), player.getPitch());
+                            player.playSound(SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.MASTER, 1f, 1f);
                             player.setInvulnerable(true);
                         }
                         GravesMod.DO_ON_NEXT_TICK.add(this);
@@ -277,18 +269,12 @@ public class GraveUtils {
         Config config = ConfigManager.getConfig();
 
 
-        if (player.getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY)
-                || config.blacklistedWorlds.contains(player.getWorld().getRegistryKey().getValue())
-                || config.configData.maxGraveCount == 0
-        ) {
+        if (player.getWorld().getGameRules().getBoolean(GameRules.KEEP_INVENTORY) || config.blacklistedWorlds.contains(player.getWorld().getRegistryKey().getValue()) || config.configData.maxGraveCount == 0) {
             return;
         }
 
         TextNode text = null;
-        var placeholders = Map.of(
-                "position", Text.literal("" + player.getBlockPos().toShortString()),
-                "world", GraveUtils.toWorldName(player.getWorld().getRegistryKey().getValue())
-        );
+        var placeholders = Map.of("position", Text.literal(player.getBlockPos().toShortString()), "world", GraveUtils.toWorldName(player.getWorld().getRegistryKey().getValue()));
 
         if (!config.configData.createFromPvP && source.getAttacker() instanceof PlayerEntity) {
             text = config.creationFailedPvPMessage;
@@ -337,15 +323,7 @@ public class GraveUtils {
                             allowedUUID.add(playerEntity.getUuid());
                         }
                     }
-                    var grave = Grave.createBlock(
-                            gameProfile,
-                            world.getRegistryKey().getValue(),
-                            gravePos,finalExperience,
-                            source.getDeathMessage(player),
-                            allowedUUID,
-                            items,
-                            (int) (world.getServer().getOverworld().getTimeOfDay() / 24000)
-                    );
+                    var grave = Grave.createBlock(gameProfile, world.getRegistryKey().getValue(), gravePos, finalExperience, source.getDeathMessage(player), allowedUUID, items, (int) (world.getServer().getOverworld().getTimeOfDay() / 24000));
 
                     ((PlayerAdditions) player).graves_setLastGrave(grave.getId());
                     BlockState oldBlockState = world.getBlockState(gravePos);
@@ -382,6 +360,10 @@ public class GraveUtils {
                             text2 = config.creationFailedGraveMessage;
                             var droppedItems = DefaultedList.<ItemStack>ofSize(0);
                             for (var item : items) {
+                                //0 to 100 value
+                                if (GraveGameRules.getDropItemStackChance(world) > world.random.nextInt(100)) {
+                                    droppedItems.add(item.stack());
+                                }
                                 droppedItems.add(item.stack());
                             }
 
@@ -422,9 +404,7 @@ public class GraveUtils {
 
 
     public enum BlockResult {
-        ALLOW(true, 3),
-        BLOCK(false, 0),
-        BLOCK_CLAIM(false, 1);
+        ALLOW(true, 3), BLOCK(false, 0), BLOCK_CLAIM(false, 1);
 
         private final boolean allow;
         private final int priority;
@@ -439,6 +419,6 @@ public class GraveUtils {
         }
     }
 
-    public static record BlockCheckResult(@Nullable BlockPos pos, BlockResult result) {
+    public record BlockCheckResult(@Nullable BlockPos pos, BlockResult result) {
     }
 }
